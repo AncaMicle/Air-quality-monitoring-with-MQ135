@@ -1,0 +1,48 @@
+#include<LiquidCrystal.h>
+// initialize the library by associating any needed LCD interface pin
+// with the arduino pin number it is connected to
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
+void setup()
+{
+// set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+// initialize serial comunication between Arduino and PC at 9600 bps:
+  Serial.begin(9600);
+}
+void loop() {
+//sensor_volt is the conversion of anolog output of MQ135 into voltage
+  float sensor_volt;
+//Rs_air is the the RS of the MQ135 in 400 ppm CO2 which is the current concentration of the CO2 in Atmosphere.
+  float Rs_air;
+//R0 is the sensor resistance at 100 ppm of NH3 in clean air; it varies from one sensor to another 
+  float R0;
+//MQ135 analog output as sensorValue 
+  float sensorValue;
+  sensorValue=0;
+  for ( int x = 0 ; x <500 ;x++)
+  {
+  sensorValue=sensorValue+analogRead(A0); //Add analog values of sensor for 500 times
+  }
+  sensorValue=sensorValue/500.0; //take average of readings 
+  sensor_volt = sensorValue * (5.0 / 1023.0); //convert average to voltage
+  Rs_air=((5.0*20.0)/sensor_volt)-20.0;
+  R0=Rs_air/3.6;
+  Serial.print("V= ");
+  Serial.print(sensor_volt);
+  Serial.print("    ");
+  Serial.print(analogRead(A0));
+  Serial.print("    ");
+  Serial.print("R0 = ");
+  Serial. println(R0);
+  delay(1000);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("R0 =");
+  lcd.setCursor(5, 0);
+  lcd.print(R0);
+  lcd.setCursor(0, 1);
+  lcd.print("V=");
+  lcd.setCursor(4, 1);
+  lcd.print(sensor_volt);
+  lcd.setCursor(8, 1);
+}
