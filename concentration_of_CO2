@@ -1,0 +1,63 @@
+#include<LiquidCrystal.h>
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
+
+int led = 13;
+int buzzer = 11;
+int MQ135 = A0;
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(led, OUTPUT);  //set LED as output
+  digitalWrite(led, HIGH);
+  pinMode(buzzer, OUTPUT); //set buzzer as output
+  digitalWrite(buzzer, HIGH);
+  pinMode(MQ135, INPUT); //set gas sensor as input
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
+  lcd.print("C02 concentration ");
+  lcd.setCursor(0, 1);
+  lcd.print(" air monitoring ");
+  delay(750);
+  lcd.clear();
+  digitalWrite(led, LOW);
+  digitalWrite(buzzer, LOW);
+}
+
+void loop()
+{
+  lcd.clear();
+  float MQ135_volt;
+  float RS_CO2;
+  float R0;
+  float Slope;
+  float Y_intercept;
+  float MQ135Value = (analogRead(MQ135));
+  float Y_Value;
+  MQ135_volt = MQ135Value * (5.0 / 1023.0);
+  RS_CO2 = ((5.0 * 20.) / MQ135_volt)-20.;
+  R0 = 1; //!!! we put 1 for RO calue to be able to compile the program, we will pun here the value for R0 calculated in calibration
+  Slope = -0.347243;
+  Y_intercept = 0,732991;
+  Y_Value = RS_CO2 / R0;
+  double ppm = pow(10, (log10(Y_Value) - Y_intercept) / Slope);
+  lcd.setCursor(0, 0);
+  lcd.print("CO2 =");
+  lcd.setCursor(6, 0);
+  lcd.print(ppm);
+  if   ( ppm >= 600)
+  {
+    digitalWrite(led, HIGH);
+    digitalWrite(buzzer, HIGH);
+    lcd.setCursor(0, 1);
+    lcd.print("HIGH LEVEL");
+    delay(2000);
+  }
+  else
+  { digitalWrite(led, LOW);
+    digitalWrite(buzzer, LOW);
+    lcd.setCursor(0, 1);
+    lcd.print("HIGH LEVEL");
+  }
+  delay(1000);
+}
